@@ -15,6 +15,12 @@
 
   <!-- Theme color -->
   <meta name="theme-color" content="#012040" />
+  
+  <!-- Permissions Policy for YouTube embeds -->
+  <meta http-equiv="Permissions-Policy" content="autoplay=*, encrypted-media=*, accelerometer=*, gyroscope=*, picture-in-picture=*, clipboard-write=*, web-share=*" />
+  
+  <!-- YouTube IFrame API -->
+  <script src="https://www.youtube.com/iframe_api"></script>
 </head>
 <body>
   <header class="site-header">
@@ -32,6 +38,7 @@
           <li><a href="#academics">Academics</a></li>
           <li><a href="#labs">Labs &amp; IT</a></li>
           <li><a href="#facilities">Facilities</a></li>
+          <li><a href="#homework">Homework</a></li>
           <li><a href="#admissions">Admissions</a></li>
           <li><a href="#administration">Administration</a></li>
           <li><a href="#contact">Contact</a></li>
@@ -53,8 +60,7 @@
           </div>
         </div>
         <div class="hero-image" aria-hidden="true">
-          <!-- Replace with images/school-building.jpg if you have a photo -->
-          <img src="images/classroom.svg" alt="School classroom illustration" />
+          <img src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=600&h=400&fit=crop" alt="School classroom illustration" onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'600\' height=\'400\'%3E%3Crect fill=\'%23f0f4f8\' width=\'600\' height=\'400\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' font-size=\'80\' text-anchor=\'middle\' dominant-baseline=\'middle\' fill=\'%23D4A017\'%3E🏫%3C/text%3E%3C/svg%3E';" />
         </div>
       </div>
     </section>
@@ -112,7 +118,7 @@
 
         <div class="labs-grid">
           <article class="card lab-card">
-            <img src="images/classroom.svg" alt="Computer lab illustration" class="card-image" />
+            <img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=200&fit=crop" alt="Computer lab illustration" class="card-image" onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'400\' height=\'200\'%3E%3Crect fill=\'%23e8eef5\' width=\'400\' height=\'200\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' font-size=\'60\' text-anchor=\'middle\' dominant-baseline=\'middle\' fill=\'%23D4A017\'%3E💻%3C/text%3E%3C/svg%3E';" />
             <h3>Computer Lab</h3>
             <p>Modern computer lab with workstations for class-based instruction and coding clubs.</p>
             <ul>
@@ -123,7 +129,7 @@
           </article>
 
           <article class="card lab-card">
-            <img src="images/lab.svg" alt="Science lab illustration" class="card-image" />
+            <img src="https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=400&h=200&fit=crop" alt="Science lab illustration" class="card-image" onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'400\' height=\'200\'%3E%3Crect fill=\'%23e8eef5\' width=\'400\' height=\'200\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' font-size=\'60\' text-anchor=\'middle\' dominant-baseline=\'middle\' fill=\'%23D4A017\'%3E🔬%3C/text%3E%3C/svg%3E';" />
             <h3>Science Lab</h3>
             <p>Practical experiments and demonstration equipment to reinforce classroom learning.</p>
             <ul>
@@ -134,7 +140,7 @@
           </article>
 
           <article class="card lab-card">
-            <img src="images/admin-office.svg" alt="IT resources illustration" class="card-image" />
+            <img src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=400&h=200&fit=crop" alt="IT resources illustration" class="card-image" onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'400\' height=\'200\'%3E%3Crect fill=\'%23e8eef5\' width=\'400\' height=\'200\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' font-size=\'60\' text-anchor=\'middle\' dominant-baseline=\'middle\' fill=\'%23D4A017\'%3E📱%3C/text%3E%3C/svg%3E';" />
             <h3>IT Resources</h3>
             <p>School IT infrastructure and learning resources for both students and teachers.</p>
             <ul>
@@ -166,6 +172,38 @@
               <button class="btn btn-primary" type="submit">Send to IT Helpdesk</button>
             </div>
           </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- Homework Section -->
+    <section id="homework" class="section homework">
+      <div class="container">
+        <h2>Homework &amp; Learning Resources</h2>
+        <p class="sub">Access educational videos organized by grade and subject to support your learning at home.</p>
+
+        <!-- Grade Selector -->
+        <div class="grade-selector">
+          <button class="grade-btn active" data-grade="nursery-kg">Nursery &amp; KG</button>
+          <button class="grade-btn" data-grade="1-2">Class 1-2</button>
+          <button class="grade-btn" data-grade="3-4">Class 3-4</button>
+          <button class="grade-btn" data-grade="5">Class 5</button>
+          <button class="grade-btn" data-grade="6-7">Class 6-7</button>
+          <button class="grade-btn" data-grade="8">Class 8</button>
+        </div>
+
+        <!-- Course Tabs -->
+        <div class="course-tabs" id="course-tabs">
+          <button class="course-tab active" data-course="all">All Subjects</button>
+          <button class="course-tab" data-course="math">Mathematics</button>
+          <button class="course-tab" data-course="english">English</button>
+          <button class="course-tab" data-course="science">Science</button>
+          <button class="course-tab" data-course="urdu">Urdu</button>
+        </div>
+
+        <!-- Videos Container -->
+        <div id="videos-container" class="videos-grid">
+          <!-- Videos will be dynamically loaded here -->
         </div>
       </div>
     </section>
@@ -249,7 +287,7 @@
 
         <div class="admin-grid">
           <article class="card admin-card">
-            <img src="images/admin-office.svg" alt="Principal office illustration" class="card-image" />
+            <img src="https://images.unsplash.com/photo-1509062522246-3755977927d7?w=400&h=200&fit=crop" alt="Principal office illustration" class="card-image" onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'400\' height=\'200\'%3E%3Crect fill=\'%23e8eef5\' width=\'400\' height=\'200\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' font-size=\'60\' text-anchor=\'middle\' dominant-baseline=\'middle\' fill=\'%23D4A017\'%3E👨‍🏫%3C/text%3E%3C/svg%3E';" />
             <h3>Principal</h3>
             <p><strong>Rao Asif</strong></p>
             <p>Leads school strategy, curriculum oversight and community engagement.</p>
