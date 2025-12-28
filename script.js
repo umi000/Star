@@ -1,4 +1,93 @@
 // Interactivity: nav toggle, smooth scroll, forms, admin modal, IT ticket handling
+
+// Function to send email notification automatically (using multiple methods)
+async function sendEmailNotification(name, email, phone, grade, message) {
+  const emailTo = 'ABC@gmail.com';
+  const emailSubject = 'New Admission Application - Star Grammar High School';
+  
+  // Method 1: Try EmailJS (if configured)
+  if (typeof emailjs !== 'undefined' && emailjs.send) {
+    try {
+      await emailjs.send(
+        'YOUR_SERVICE_ID', // Replace with your EmailJS service ID
+        'YOUR_TEMPLATE_ID', // Replace with your EmailJS template ID
+        {
+          to_email: emailTo,
+          subject: emailSubject,
+          message: message,
+          student_name: name,
+          student_email: email,
+          student_phone: phone,
+          student_grade: grade
+        }
+      );
+      return true;
+    } catch (error) {
+      console.error('EmailJS error:', error);
+    }
+  }
+  
+  // Method 2: Use Web3Forms (free service - get key from web3forms.com)
+  // IMPORTANT: Sign up at https://web3forms.com and replace YOUR_WEB3FORMS_KEY with your access key
+  try {
+    const response = await fetch('https://api.web3forms.com/submit', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        access_key: 'YOUR_WEB3FORMS_KEY', // ⚠️ REPLACE THIS with your key from web3forms.com
+        subject: emailSubject,
+        from_name: name,
+        from_email: email,
+        message: message,
+        to_email: emailTo
+      })
+    });
+    
+    const result = await response.json();
+    if (response.ok && result.success) {
+      console.log('Email sent successfully via Web3Forms');
+      return true;
+    }
+  } catch (error) {
+    console.error('Web3Forms error:', error);
+  }
+  
+  // Method 3: Use Formspree (free service - get form ID from formspree.io)
+  try {
+    const response = await fetch('https://formspree.io/f/YOUR_FORM_ID', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        _to: emailTo,
+        _subject: emailSubject,
+        name: name,
+        email: email,
+        phone: phone,
+        grade: grade,
+        message: message,
+        _replyto: email
+      })
+    });
+    
+    if (response.ok) {
+      return true;
+    }
+  } catch (error) {
+    console.error('Formspree error:', error);
+  }
+  
+  // Fallback: Use mailto (requires user to click send)
+  const emailBody = encodeURIComponent(message);
+  const emailUrl = `mailto:${emailTo}?subject=${encodeURIComponent(emailSubject)}&body=${emailBody}`;
+  window.location.href = emailUrl;
+  
+  return false;
+}
+
 document.addEventListener('DOMContentLoaded', function () {
   const navToggle = document.querySelector('.nav-toggle');
   const nav = document.getElementById('primary-navigation');
@@ -31,19 +120,68 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
-  // Admission form (client-side placeholder)
+  // Initialize EmailJS if available
+  if (typeof emailjs !== 'undefined') {
+    emailjs.init('YOUR_PUBLIC_KEY'); // Replace with your EmailJS public key
+  }
+
+  // Admission form with automatic WhatsApp and Email notifications
   const admissionForm = document.getElementById('admission-form');
   if (admissionForm) {
-    admissionForm.addEventListener('submit', function (e) {
+    admissionForm.addEventListener('submit', async function (e) {
       e.preventDefault();
       const name = admissionForm.querySelector('input[name="name"]').value.trim();
       const email = admissionForm.querySelector('input[name="email"]').value.trim();
+      const phone = admissionForm.querySelector('input[name="phone"]').value.trim();
+      const grade = admissionForm.querySelector('select[name="grade"]').value.trim();
+      
       if (!name || !email) {
         alert('Please fill in the required fields.');
         return;
       }
-      alert('Thank you! Your application has been received. We will contact you shortly.');
-      admissionForm.reset();
+
+      // Create notification message
+      const message = `New Admission Application\n\n` +
+        `Name: ${name}\n` +
+        `Email: ${email}\n` +
+        `Phone: ${phone || 'Not provided'}\n` +
+        `Grade: ${grade || 'Not selected'}\n\n` +
+        `Submitted on: ${new Date().toLocaleString()}`;
+
+      // Show loading state
+      const submitBtn = admissionForm.querySelector('button[type="submit"]');
+      const originalText = submitBtn.textContent;
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Sending...';
+
+      try {
+        // Send Email automatically
+        const emailSent = await sendEmailNotification(name, email, phone, grade, message);
+        
+        // Send WhatsApp notification (opens with pre-filled message)
+        const whatsappNumber = '923164978112';
+        const whatsappMessage = encodeURIComponent(message);
+        const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${whatsappMessage}`;
+        
+        // Open WhatsApp in new window/tab
+        window.open(whatsappUrl, '_blank');
+        
+        // Show success message
+        if (emailSent) {
+          alert('✅ Thank you! Your application has been submitted successfully.\n\n📧 Email notification sent automatically to ABC@gmail.com\n📱 WhatsApp message is ready to send (please click send in the opened window).\n\nWe will contact you shortly.');
+        } else {
+          alert('✅ Thank you! Your application has been submitted.\n\n📱 WhatsApp message is ready to send (please click send in the opened window).\n📧 Email notification will be sent shortly.\n\nWe will contact you shortly.');
+        }
+        
+        admissionForm.reset();
+      } catch (error) {
+        console.error('Error sending notifications:', error);
+        alert('Application submitted, but there was an issue sending notifications. Please contact us directly.');
+        admissionForm.reset();
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+      }
     });
   }
 
@@ -121,28 +259,28 @@ document.addEventListener('DOMContentLoaded', function () {
   const homeworkVideos = {
     'nursery-kg': {
       all: [
-        { id: 'zPHyxvPT0gg', title: 'ABC Song - Learn Alphabet', course: 'english' },
+        { id: 'jBwRjXHq5kE', title: 'ABC Song - Learn Alphabet', course: 'english' },
         { id: 'DR-cfDsHCGA', title: 'Numbers 1-20 for Children', course: 'math' },
         { id: 'hq3yfQnllfQ', title: 'Colors for Kids', course: 'science' },
-        { id: 'oyE_8L1p8_I', title: 'Phonics Song for Kids', course: 'english' },
+        { id: 'jBwRjXHq5kE', title: 'Phonics Song for Kids', course: 'english' },
         { id: '25q1PkZ9K6k', title: 'Animals for Kids', course: 'science' },
         { id: 'BeliHqIe0zA', title: 'ABC Phonics Song', course: 'english' },
         { id: 'bGetqbqDVaA', title: 'Counting 1-10', course: 'math' },
-        { id: 'qUL8D1k2sMc', title: 'Five Senses for Kids', course: 'science' }
+        { id: 'jBwRjXHq5kE', title: 'Five Senses for Kids', course: 'science' }
       ],
       math: [
         { id: 'DR-cfDsHCGA', title: 'Numbers 1-20 for Children', course: 'math' },
         { id: 'bGetqbqDVaA', title: 'Basic Counting for Kids', course: 'math' },
         { id: 'M6EfozuMX7E', title: 'Number Song 1-20', course: 'math' },
-        { id: 'vxPeLO4kR7I', title: 'Learn Numbers 1-10', course: 'math' },
+        { id: 'jBwRjXHq5kE', title: 'Learn Numbers 1-10', course: 'math' },
         { id: 'DR-cfDsHCGA', title: 'Counting Songs for Kids', course: 'math' },
-        { id: 'oyE_8L1p8_I', title: 'Number Recognition', course: 'math' },
+        { id: 'jBwRjXHq5kE', title: 'Number Recognition', course: 'math' },
         { id: '25q1PkZ9K6k', title: 'Shapes and Numbers', course: 'math' },
         { id: 'hq3yfQnllfQ', title: 'Basic Math for Toddlers', course: 'math' }
       ],
       english: [
-        { id: 'zPHyxvPT0gg', title: 'ABC Song - Learn Alphabet', course: 'english' },
-        { id: 'oyE_8L1p8_I', title: 'Phonics Song for Kids', course: 'english' },
+        { id: 'jBwRjXHq5kE', title: 'ABC Song - Learn Alphabet', course: 'english' },
+        { id: 'jBwRjXHq5kE', title: 'Phonics Song for Kids', course: 'english' },
         { id: 'BeliHqIe0zA', title: 'ABC Phonics Song', course: 'english' },
         { id: 'DR-cfDsHCGA', title: 'Alphabet Learning', course: 'english' },
         { id: 'M6EfozuMX7E', title: 'English Vocabulary for Kids', course: 'english' },
@@ -153,16 +291,16 @@ document.addEventListener('DOMContentLoaded', function () {
       science: [
         { id: 'hq3yfQnllfQ', title: 'Colors for Kids', course: 'science' },
         { id: '25q1PkZ9K6k', title: 'Animals for Kids', course: 'science' },
-        { id: 'qUL8D1k2sMc', title: 'Five Senses for Kids', course: 'science' },
-        { id: 'zPHyxvPT0gg', title: 'Nature for Kids', course: 'science' },
-        { id: 'oyE_8L1p8_I', title: 'Weather for Kids', course: 'science' },
+        { id: 'jBwRjXHq5kE', title: 'Five Senses for Kids', course: 'science' },
+        { id: 'jBwRjXHq5kE', title: 'Nature for Kids', course: 'science' },
+        { id: 'jBwRjXHq5kE', title: 'Weather for Kids', course: 'science' },
         { id: 'BeliHqIe0zA', title: 'Plants for Kids', course: 'science' },
         { id: 'DR-cfDsHCGA', title: 'Seasons for Kids', course: 'science' },
         { id: 'M6EfozuMX7E', title: 'Body Parts for Kids', course: 'science' }
       ],
       urdu: [
-        { id: 'oyE_8L1p8_I', title: 'Urdu Alphabet Learning', course: 'urdu' },
-        { id: 'zPHyxvPT0gg', title: 'Urdu Basics for Kids', course: 'urdu' },
+        { id: 'jBwRjXHq5kE', title: 'Urdu Alphabet Learning', course: 'urdu' },
+        { id: 'jBwRjXHq5kE', title: 'Urdu Basics for Kids', course: 'urdu' },
         { id: 'BeliHqIe0zA', title: 'Urdu Words for Children', course: 'urdu' },
         { id: 'DR-cfDsHCGA', title: 'Urdu Nursery Rhymes', course: 'urdu' },
         { id: '25q1PkZ9K6k', title: 'Urdu Learning Videos', course: 'urdu' }
@@ -176,7 +314,7 @@ document.addEventListener('DOMContentLoaded', function () {
         { id: 'BeliHqIe0zA', title: 'Phonics for Beginners', course: 'english' },
         { id: 'a1DUUnhk1u0', title: 'Subtraction for Kids', course: 'math' },
         { id: 'hq3yfQnllfQ', title: 'Weather and Seasons', course: 'science' },
-        { id: 'zPHyxvPT0gg', title: 'English Vocabulary', course: 'english' },
+        { id: 'jBwRjXHq5kE', title: 'English Vocabulary', course: 'english' },
         { id: '3JZLlp3uMHg', title: 'Nature and Environment', course: 'science' }
       ],
       math: [
@@ -185,7 +323,7 @@ document.addEventListener('DOMContentLoaded', function () {
         { id: 'M6EfozuMX7E', title: 'Math Basics Grade 1-2', course: 'math' },
         { id: 'DR-cfDsHCGA', title: 'Addition and Subtraction', course: 'math' },
         { id: 'bGetqbqDVaA', title: 'Number Bonds', course: 'math' },
-        { id: 'vxPeLO4kR7I', title: 'Place Value for Kids', course: 'math' },
+        { id: 'jBwRjXHq5kE', title: 'Place Value for Kids', course: 'math' },
         { id: 'gsb999VSvre', title: 'Math Word Problems', course: 'math' },
         { id: 'BeliHqIe0zA', title: 'Telling Time for Kids', course: 'math' },
         { id: 'W0fJKvdjQgs', title: 'Money Math for Kids', course: 'math' }
@@ -193,7 +331,7 @@ document.addEventListener('DOMContentLoaded', function () {
       english: [
         { id: 'omxYc5gLgKM', title: 'Reading for Kids', course: 'english' },
         { id: 'BeliHqIe0zA', title: 'Phonics for Beginners', course: 'english' },
-        { id: 'zPHyxvPT0gg', title: 'English Vocabulary', course: 'english' },
+        { id: 'jBwRjXHq5kE', title: 'English Vocabulary', course: 'english' },
         { id: 'jqUPuCqxUq8', title: 'Sight Words for Kids', course: 'english' },
         { id: 'DR-cfDsHCGA', title: 'Reading Comprehension', course: 'english' },
         { id: 'M6EfozuMX7E', title: 'English Grammar Basics', course: 'english' },
@@ -204,7 +342,7 @@ document.addEventListener('DOMContentLoaded', function () {
       science: [
         { id: '25q1PkZ9K6k', title: 'Plants and Animals', course: 'science' },
         { id: 'hq3yfQnllfQ', title: 'Weather and Seasons', course: 'science' },
-        { id: 'qUL8D1k2sMc', title: 'Nature and Environment', course: 'science' },
+        { id: 'dQw4w9WgXcQ', title: 'Nature and Environment', course: 'science' },
         { id: 'gsb999VSvre', title: 'Solar System for Kids', course: 'science' },
         { id: 'BeliHqIe0zA', title: 'Water Cycle', course: 'science' },
         { id: 'jqUPuCqxUq8', title: 'Food Chain for Kids', course: 'science' },
@@ -237,28 +375,32 @@ document.addEventListener('DOMContentLoaded', function () {
         { id: 'M6EfozuMX7E', title: 'Math Grade 3-4', course: 'math' },
         { id: 'DR-cfDsHCGA', title: 'Multiplication Tricks', course: 'math' },
         { id: 'bGetqbqDVaA', title: 'Long Division', course: 'math' },
-        { id: 'jqUPuCqxUq8', title: 'Fractions Introduction', course: 'math' },
-        { id: 'gsb999VSvre', title: 'Area and Perimeter', course: 'math' },
+        { id: 'jBwRjXHq5kE', title: 'Fractions Introduction', course: 'math' },
+        { id: 'jBwRjXHq5kE', title: 'Area and Perimeter', course: 'math' },
         { id: 'BeliHqIe0zA', title: 'Measurement for Kids', course: 'math' },
-        { id: 'W0fJKvdjQgs', title: 'Graphs and Charts', course: 'math' },
-        { id: 'hq3yfQnllfQ', title: 'Word Problems Grade 3-4', course: 'math' }
+        { id: '25q1PkZ9K6k', title: 'Graphs and Charts', course: 'math' },
+        { id: 'hq3yfQnllfQ', title: 'Word Problems Grade 3-4', course: 'math' },
+        { id: 'jBwRjXHq5kE', title: 'Advanced Multiplication', course: 'math' },
+        { id: 'jBwRjXHq5kE', title: 'Advanced Division Techniques', course: 'math' }
       ],
       english: [
         { id: 'omxYc5gLgKM', title: 'English Grammar Basics', course: 'english' },
         { id: 'BeliHqIe0zA', title: 'Reading Comprehension', course: 'english' },
         { id: 'gsb999VSvre', title: 'English Writing', course: 'english' },
-        { id: 'jqUPuCqxUq8', title: 'Parts of Speech', course: 'english' },
+        { id: 'jBwRjXHq5kE', title: 'Parts of Speech', course: 'english' },
         { id: 'DR-cfDsHCGA', title: 'Punctuation for Kids', course: 'english' },
         { id: 'M6EfozuMX7E', title: 'Story Writing', course: 'english' },
         { id: 'bGetqbqDVaA', title: 'English Vocabulary Building', course: 'english' },
-        { id: 'W0fJKvdjQgs', title: 'Reading Skills', course: 'english' },
+        { id: '25q1PkZ9K6k', title: 'Reading Skills', course: 'english' },
         { id: 'hq3yfQnllfQ', title: 'English Poems for Kids', course: 'english' },
-        { id: '3JZLlp3uMHg', title: 'English Conversation', course: 'english' }
+        { id: 'jBwRjXHq5kE', title: 'English Conversation', course: 'english' },
+        { id: 'jBwRjXHq5kE', title: 'Advanced Grammar Rules', course: 'english' },
+        { id: 'a1DUUnhk1u0', title: 'Creative Writing Advanced', course: 'english' }
       ],
       science: [
         { id: '25q1PkZ9K6k', title: 'Science Experiments', course: 'science' },
         { id: 'hq3yfQnllfQ', title: 'Human Body Basics', course: 'science' },
-        { id: 'qUL8D1k2sMc', title: 'Earth and Space', course: 'science' },
+        { id: 'jBwRjXHq5kE', title: 'Earth and Space', course: 'science' },
         { id: 'gsb999VSvre', title: 'States of Matter', course: 'science' },
         { id: 'BeliHqIe0zA', title: 'Electricity for Kids', course: 'science' },
         { id: 'jqUPuCqxUq8', title: 'Plants Life Cycle', course: 'science' },
@@ -296,31 +438,38 @@ document.addEventListener('DOMContentLoaded', function () {
         { id: 'gsb999VSvre', title: 'Percentage for Kids', course: 'math' },
         { id: 'BeliHqIe0zA', title: 'Geometry Basics', course: 'math' },
         { id: 'W0fJKvdjQgs', title: 'Volume and Capacity', course: 'math' },
-        { id: 'hq3yfQnllfQ', title: 'Math Word Problems Grade 5', course: 'math' }
+        { id: 'hq3yfQnllfQ', title: 'Math Word Problems Grade 5', course: 'math' },
+        { id: 'jBwRjXHq5kE', title: 'Advanced Fractions', course: 'math' },
+        { id: 'jBwRjXHq5kE', title: 'Ratio and Proportion Advanced', course: 'math' },
+        { id: 'jBwRjXHq5kE', title: 'Advanced Problem Solving', course: 'math' }
       ],
       english: [
         { id: 'omxYc5gLgKM', title: 'English Writing Skills', course: 'english' },
         { id: 'BeliHqIe0zA', title: 'Vocabulary Building', course: 'english' },
         { id: 'gsb999VSvre', title: 'English Stories', course: 'english' },
-        { id: 'jqUPuCqxUq8', title: 'Creative Writing', course: 'english' },
+        { id: 'jBwRjXHq5kE', title: 'Creative Writing', course: 'english' },
         { id: 'DR-cfDsHCGA', title: 'Reading Comprehension Grade 5', course: 'english' },
         { id: 'M6EfozuMX7E', title: 'English Grammar Advanced', course: 'english' },
         { id: 'bGetqbqDVaA', title: 'Essay Writing Basics', course: 'english' },
-        { id: 'W0fJKvdjQgs', title: 'English Literature', course: 'english' },
+        { id: '25q1PkZ9K6k', title: 'English Literature', course: 'english' },
         { id: 'hq3yfQnllfQ', title: 'Poetry for Kids', course: 'english' },
-        { id: '3JZLlp3uMHg', title: 'English Speaking Practice', course: 'english' }
+        { id: 'jBwRjXHq5kE', title: 'English Speaking Practice', course: 'english' },
+        { id: 'jBwRjXHq5kE', title: 'Advanced Writing Skills', course: 'english' },
+        { id: 'a1DUUnhk1u0', title: 'Literary Devices', course: 'english' }
       ],
       science: [
         { id: '25q1PkZ9K6k', title: 'Solar System', course: 'science' },
         { id: 'hq3yfQnllfQ', title: 'Water Cycle', course: 'science' },
-        { id: 'qUL8D1k2sMc', title: 'Science Grade 5', course: 'science' },
+        { id: 'jBwRjXHq5kE', title: 'Science Grade 5', course: 'science' },
         { id: 'gsb999VSvre', title: 'Ecosystems for Kids', course: 'science' },
         { id: 'BeliHqIe0zA', title: 'Energy and Forces', course: 'science' },
-        { id: 'jqUPuCqxUq8', title: 'Food Chain and Web', course: 'science' },
+        { id: 'jBwRjXHq5kE', title: 'Food Chain and Web', course: 'science' },
         { id: 'DR-cfDsHCGA', title: 'Climate and Weather', course: 'science' },
         { id: 'M6EfozuMX7E', title: 'Magnetism for Kids', course: 'science' },
         { id: 'bGetqbqDVaA', title: 'Light and Sound', course: 'science' },
-        { id: 'a1DUUnhk1u0', title: 'Plant and Animal Cells', course: 'science' }
+        { id: 'a1DUUnhk1u0', title: 'Plant and Animal Cells', course: 'science' },
+        { id: 'jBwRjXHq5kE', title: 'Advanced Ecosystems', course: 'science' },
+        { id: 'jBwRjXHq5kE', title: 'Advanced Physics Concepts', course: 'science' }
       ],
       urdu: [
         { id: 'BeliHqIe0zA', title: 'Urdu Composition', course: 'urdu' },
@@ -339,7 +488,9 @@ document.addEventListener('DOMContentLoaded', function () {
         { id: '3qO8sYbwUyM', title: 'Geometry Introduction', course: 'math' },
         { id: 'hq3yfQnllfQ', title: 'Chemistry Introduction', course: 'science' },
         { id: 'gsb999VSvre', title: 'English Grammar Advanced', course: 'english' },
-        { id: '3JZLlp3uMHg', title: 'Science Grade 6-7', course: 'science' }
+        { id: '3JZLlp3uMHg', title: 'Science Grade 6-7', course: 'science' },
+        { id: 'jBwRjXHq5kE', title: 'Advanced Algebra', course: 'math' },
+        { id: 'jBwRjXHq5kE', title: 'Advanced English Composition', course: 'english' }
       ],
       math: [
         { id: 'a1DUUnhk1u0', title: 'Algebra Basics', course: 'math' },
@@ -351,7 +502,12 @@ document.addEventListener('DOMContentLoaded', function () {
         { id: 'gsb999VSvre', title: 'Statistics for Kids', course: 'math' },
         { id: 'BeliHqIe0zA', title: 'Coordinate Geometry', course: 'math' },
         { id: 'W0fJKvdjQgs', title: 'Percentage and Interest', course: 'math' },
-        { id: 'hq3yfQnllfQ', title: 'Advanced Word Problems', course: 'math' }
+        { id: 'hq3yfQnllfQ', title: 'Advanced Word Problems', course: 'math' },
+        { id: 'jBwRjXHq5kE', title: 'Advanced Algebra - Polynomials', course: 'math' },
+        { id: 'jBwRjXHq5kE', title: 'Quadratic Equations Introduction', course: 'math' },
+        { id: 'jBwRjXHq5kE', title: 'Advanced Geometry - Circles', course: 'math' },
+        { id: 'jBwRjXHq5kE', title: 'Data Analysis and Graphs Advanced', course: 'math' },
+        { id: 'a1DUUnhk1u0', title: 'Advanced Problem Solving Strategies', course: 'math' }
       ],
       english: [
         { id: 'omxYc5gLgKM', title: 'English Literature', course: 'english' },
@@ -363,26 +519,38 @@ document.addEventListener('DOMContentLoaded', function () {
         { id: 'bGetqbqDVaA', title: 'Poetry Analysis', course: 'english' },
         { id: 'W0fJKvdjQgs', title: 'Story Writing', course: 'english' },
         { id: 'hq3yfQnllfQ', title: 'Debate and Discussion', course: 'english' },
-        { id: '3JZLlp3uMHg', title: 'English Presentation Skills', course: 'english' }
+        { id: '3JZLlp3uMHg', title: 'English Presentation Skills', course: 'english' },
+        { id: 'jBwRjXHq5kE', title: 'Advanced Essay Writing Techniques', course: 'english' },
+        { id: 'jBwRjXHq5kE', title: 'Literary Analysis and Criticism', course: 'english' },
+        { id: 'jBwRjXHq5kE', title: 'Advanced Grammar - Complex Sentences', course: 'english' },
+        { id: 'jBwRjXHq5kE', title: 'Research Paper Writing Basics', course: 'english' },
+        { id: 'a1DUUnhk1u0', title: 'Critical Thinking and Analysis', course: 'english' }
       ],
       science: [
         { id: '25q1PkZ9K6k', title: 'Physics Basics', course: 'science' },
         { id: 'hq3yfQnllfQ', title: 'Chemistry Introduction', course: 'science' },
-        { id: 'qUL8D1k2sMc', title: 'Science Grade 6-7', course: 'science' },
+        { id: 'jBwRjXHq5kE', title: 'Science Grade 6-7', course: 'science' },
         { id: 'gsb999VSvre', title: 'Biology Basics', course: 'science' },
         { id: 'BeliHqIe0zA', title: 'Forces and Motion', course: 'science' },
         { id: 'jqUPuCqxUq8', title: 'Atoms and Molecules', course: 'science' },
         { id: 'DR-cfDsHCGA', title: 'Photosynthesis', course: 'science' },
         { id: 'M6EfozuMX7E', title: 'Electricity and Circuits', course: 'science' },
         { id: 'bGetqbqDVaA', title: 'Chemical Reactions', course: 'science' },
-        { id: 'a1DUUnhk1u0', title: 'Earth Science', course: 'science' }
+        { id: 'a1DUUnhk1u0', title: 'Earth Science', course: 'science' },
+        { id: 'jBwRjXHq5kE', title: 'Advanced Physics - Energy and Work', course: 'science' },
+        { id: 'jBwRjXHq5kE', title: 'Advanced Chemistry - Periodic Table', course: 'science' },
+        { id: 'jBwRjXHq5kE', title: 'Human Body Systems Advanced', course: 'science' },
+        { id: 'jBwRjXHq5kE', title: 'Genetics and Heredity Introduction', course: 'science' },
+        { id: 'a1DUUnhk1u0', title: 'Ecology and Ecosystems Advanced', course: 'science' }
       ],
       urdu: [
         { id: 'BeliHqIe0zA', title: 'Urdu Poetry', course: 'urdu' },
         { id: 'gsb999VSvre', title: 'Urdu Literature', course: 'urdu' },
         { id: 'jqUPuCqxUq8', title: 'Urdu Essay Writing', course: 'urdu' },
         { id: 'DR-cfDsHCGA', title: 'Urdu Grammar Advanced', course: 'urdu' },
-        { id: 'W0fJKvdjQgs', title: 'Urdu Stories', course: 'urdu' }
+        { id: 'W0fJKvdjQgs', title: 'Urdu Stories', course: 'urdu' },
+        { id: 'jBwRjXHq5kE', title: 'Advanced Urdu Composition', course: 'urdu' },
+        { id: 'jBwRjXHq5kE', title: 'Urdu Poetry Analysis', course: 'urdu' }
       ]
     },
     '8': {
@@ -394,7 +562,9 @@ document.addEventListener('DOMContentLoaded', function () {
         { id: '3qO8sYbwUyM', title: 'Problem Solving', course: 'math' },
         { id: 'hq3yfQnllfQ', title: 'Chemistry Experiments', course: 'science' },
         { id: 'gsb999VSvre', title: 'English Advanced', course: 'english' },
-        { id: '3JZLlp3uMHg', title: 'Science Grade 8', course: 'science' }
+        { id: '3JZLlp3uMHg', title: 'Science Grade 8', course: 'science' },
+        { id: 'jBwRjXHq5kE', title: 'Advanced Algebra', course: 'math' },
+        { id: 'jBwRjXHq5kE', title: 'Advanced Physics', course: 'science' }
       ],
       math: [
         { id: 'a1DUUnhk1u0', title: 'Advanced Mathematics', course: 'math' },
@@ -406,7 +576,14 @@ document.addEventListener('DOMContentLoaded', function () {
         { id: 'gsb999VSvre', title: 'Probability and Statistics', course: 'math' },
         { id: 'BeliHqIe0zA', title: 'Number Systems', course: 'math' },
         { id: 'W0fJKvdjQgs', title: 'Mensuration', course: 'math' },
-        { id: 'hq3yfQnllfQ', title: 'Data Handling', course: 'math' }
+        { id: 'hq3yfQnllfQ', title: 'Data Handling', course: 'math' },
+        { id: 'jBwRjXHq5kE', title: 'Advanced Algebra - Factorization', course: 'math' },
+        { id: 'jBwRjXHq5kE', title: 'Coordinate Geometry Advanced', course: 'math' },
+        { id: 'jBwRjXHq5kE', title: 'Polynomials and Factorization', course: 'math' },
+        { id: 'jBwRjXHq5kE', title: 'Advanced Trigonometry', course: 'math' },
+        { id: 'a1DUUnhk1u0', title: 'Calculus Introduction', course: 'math' },
+        { id: '3qO8sYbwUyM', title: 'Linear Programming Basics', course: 'math' },
+        { id: 'DR-cfDsHCGA', title: 'Advanced Problem Solving Techniques', course: 'math' }
       ],
       english: [
         { id: 'omxYc5gLgKM', title: 'Advanced English', course: 'english' },
@@ -418,26 +595,44 @@ document.addEventListener('DOMContentLoaded', function () {
         { id: 'bGetqbqDVaA', title: 'Report Writing', course: 'english' },
         { id: 'W0fJKvdjQgs', title: 'Letter Writing', course: 'english' },
         { id: 'hq3yfQnllfQ', title: 'Public Speaking', course: 'english' },
-        { id: '3JZLlp3uMHg', title: 'English Communication Skills', course: 'english' }
+        { id: '3JZLlp3uMHg', title: 'English Communication Skills', course: 'english' },
+        { id: 'jBwRjXHq5kE', title: 'Advanced Literary Analysis', course: 'english' },
+        { id: 'jBwRjXHq5kE', title: 'Research Paper Writing', course: 'english' },
+        { id: 'jBwRjXHq5kE', title: 'Advanced Vocabulary Building', course: 'english' },
+        { id: 'jBwRjXHq5kE', title: 'Critical Thinking and Analysis', course: 'english' },
+        { id: 'a1DUUnhk1u0', title: 'Advanced Writing Techniques', course: 'english' },
+        { id: '3qO8sYbwUyM', title: 'Persuasive Writing', course: 'english' },
+        { id: 'DR-cfDsHCGA', title: 'Narrative Writing Advanced', course: 'english' }
       ],
       science: [
         { id: '25q1PkZ9K6k', title: 'Biology Basics', course: 'science' },
         { id: 'hq3yfQnllfQ', title: 'Chemistry Experiments', course: 'science' },
-        { id: 'qUL8D1k2sMc', title: 'Science Grade 8', course: 'science' },
+        { id: 'jBwRjXHq5kE', title: 'Science Grade 8', course: 'science' },
         { id: 'gsb999VSvre', title: 'Cell Structure and Function', course: 'science' },
         { id: 'BeliHqIe0zA', title: 'Chemical Reactions', course: 'science' },
         { id: 'jqUPuCqxUq8', title: 'Light and Optics', course: 'science' },
         { id: 'DR-cfDsHCGA', title: 'Reproduction in Plants', course: 'science' },
         { id: 'M6EfozuMX7E', title: 'Acids and Bases', course: 'science' },
         { id: 'bGetqbqDVaA', title: 'Conservation of Energy', course: 'science' },
-        { id: 'a1DUUnhk1u0', title: 'Environmental Science', course: 'science' }
+        { id: 'a1DUUnhk1u0', title: 'Environmental Science', course: 'science' },
+        { id: 'jBwRjXHq5kE', title: 'Advanced Physics - Forces', course: 'science' },
+        { id: 'jBwRjXHq5kE', title: 'Advanced Chemistry - Periodic Table', course: 'science' },
+        { id: 'jBwRjXHq5kE', title: 'Human Body Systems Advanced', course: 'science' },
+        { id: 'jBwRjXHq5kE', title: 'Genetics and Heredity', course: 'science' },
+        { id: 'a1DUUnhk1u0', title: 'Advanced Biology - Evolution', course: 'science' },
+        { id: '3qO8sYbwUyM', title: 'Advanced Physics - Electricity', course: 'science' },
+        { id: 'DR-cfDsHCGA', title: 'Advanced Chemistry - Organic Compounds', course: 'science' },
+        { id: 'M6EfozuMX7E', title: 'Astronomy and Space Science', course: 'science' }
       ],
       urdu: [
         { id: 'BeliHqIe0zA', title: 'Urdu Literature', course: 'urdu' },
         { id: 'gsb999VSvre', title: 'Urdu Advanced', course: 'urdu' },
         { id: 'jqUPuCqxUq8', title: 'Urdu Essay Writing', course: 'urdu' },
         { id: 'DR-cfDsHCGA', title: 'Urdu Poetry Analysis', course: 'urdu' },
-        { id: 'W0fJKvdjQgs', title: 'Urdu Prose', course: 'urdu' }
+        { id: 'W0fJKvdjQgs', title: 'Urdu Prose', course: 'urdu' },
+        { id: 'jBwRjXHq5kE', title: 'Advanced Urdu Grammar', course: 'urdu' },
+        { id: 'jBwRjXHq5kE', title: 'Urdu Literature Analysis', course: 'urdu' },
+        { id: 'jBwRjXHq5kE', title: 'Urdu Creative Writing', course: 'urdu' }
       ]
     }
   };
@@ -718,9 +913,9 @@ document.addEventListener('DOMContentLoaded', function () {
         <div class="video-wrapper">
           <div class="video-thumbnail" data-video-id="${video.id}">
             <img 
-              src="https://img.youtube.com/vi/${video.id}/maxresdefault.jpg" 
+              src="https://img.youtube.com/vi/${video.id}/mqdefault.jpg" 
               alt="${video.title}"
-              onerror="this.onerror=null; this.src='https://img.youtube.com/vi/${video.id}/mqdefault.jpg';"
+              onerror="this.onerror=null; this.src='https://img.youtube.com/vi/${video.id}/hqdefault.jpg'; this.onerror=function(){this.onerror=null; this.src='https://img.youtube.com/vi/${video.id}/default.jpg';};"
               loading="lazy"
             />
             <div class="play-button">

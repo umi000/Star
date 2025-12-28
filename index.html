@@ -21,11 +21,14 @@
   
   <!-- YouTube IFrame API -->
   <script src="https://www.youtube.com/iframe_api"></script>
+  
+  <!-- EmailJS for automatic email sending -->
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 </head>
 <body>
   <header class="site-header">
     <div class="container header-inner">
-      <a class="brand" href="#home">Star Grammar</a>
+      <a class="brand" href="#home">Star Grammar High School</a>
 
       <button class="nav-toggle" aria-controls="primary-navigation" aria-expanded="false" aria-label="Toggle navigation">
         <span class="hamburger"></span>
@@ -289,10 +292,16 @@
           <article class="card admin-card">
             <img src="https://images.unsplash.com/photo-1509062522246-3755977927d7?w=400&h=200&fit=crop" alt="Principal office illustration" class="card-image" onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'400\' height=\'200\'%3E%3Crect fill=\'%23e8eef5\' width=\'400\' height=\'200\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' font-size=\'60\' text-anchor=\'middle\' dominant-baseline=\'middle\' fill=\'%23D4A017\'%3E👨‍🏫%3C/text%3E%3C/svg%3E';" />
             <h3>Principal</h3>
-            <p><strong>Rao Asif</strong></p>
+            <p><strong>Mr. Rao Asif</strong></p>
             <p>Leads school strategy, curriculum oversight and community engagement.</p>
             <p>Office hours: Mon - Fri, 09:00 - 14:00</p>
             <p>Phone: <a href="tel:+923023265987">0302 3265987</a></p>
+          </article>
+
+          <article class="card admin-card">
+            <h3>Admin</h3>
+            <p><strong>Mr. Fazal Usman</strong></p>
+            <p>Handles administrative matters, admissions and school operations.</p>
           </article>
 
           <article class="card admin-card">
@@ -322,7 +331,8 @@
         <h2>Contact</h2>
         <p>Visit us: Star Grammar High School, Near Bus Stand, Bhiria City, Sindh. (Landmark: opposite the main vegetable market)</p>
         <p>Email: <a href="mailto:admissions.star@gmail.com">admissions.star@gmail.com</a> | Finance: <a href="mailto:finance.star@gmail.com">finance.star@gmail.com</a></p>
-        <p>Principal: Rao Asif — Phone: <a href="tel:+923023265987">0302 3265987</a></p>
+        <p>Principal: Mr. Rao Asif — Phone: <a href="tel:+923023265987">0302 3265987</a></p>
+        <p>Admin: Mr. Fazal Usman</p>
 
         <div class="social">
           <a href="#" aria-label="Facebook (placeholder)">Facebook</a>
@@ -338,7 +348,7 @@
       <div>
         <strong>Star Grammar High School</strong>
         <address>Bhiria City, Sindh — Near Bus Stand</address>
-        <small>© <span id="year"></span> Star Grammar</small>
+        <small>© <span id="year"></span> Star Grammar High School</small>
       </div>
       <div class="footer-credit">
         <small>Developed by Your Name</small>
