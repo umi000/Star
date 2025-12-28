@@ -679,30 +679,41 @@ document.addEventListener('DOMContentLoaded', function () {
 
   async function renderVideos() {
     const container = document.getElementById('videos-container');
-    if (!container) return;
-
-    container.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:2rem;"><div style="display:inline-block; width:40px; height:40px; border:4px solid var(--gold); border-top-color:transparent; border-radius:50%; animation:spin 1s linear infinite;"></div><p style="margin-top:1rem; color:var(--muted);">Loading videos...</p></div>';
-
-    const videos = getVideos();
-    
-    if (videos.length === 0) {
-      container.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:var(--muted); padding:2rem;">No videos available for this selection.</p>';
+    if (!container) {
+      console.warn('Videos container not found');
       return;
     }
 
-    // Show videos without strict validation - YouTube will handle invalid videos
-    // This avoids long loading times and 404 errors
-    if (videos.length === 0) {
-      container.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:var(--muted); padding:2rem;">No videos available for this selection.</p>';
-      return;
+    try {
+      container.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:2rem;"><div style="display:inline-block; width:40px; height:40px; border:4px solid var(--gold); border-top-color:transparent; border-radius:50%; animation:spin 1s linear infinite;"></div><p style="margin-top:1rem; color:var(--muted);">Loading videos...</p></div>';
+
+      const videos = getVideos();
+      
+      if (!videos || videos.length === 0) {
+        container.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:var(--muted); padding:2rem;">No videos available for this selection.</p>';
+        return;
+      }
+      
+      // Show all videos - invalid ones will show error when clicked
+      renderVideoCards(videos, container);
+    } catch (error) {
+      console.error('Error rendering videos:', error);
+      container.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:var(--muted); padding:2rem;">Error loading videos. Please refresh the page.</p>';
     }
-    
-    // Show all videos - invalid ones will show error when clicked
-    renderVideoCards(videos, container);
   }
 
   function renderVideoCards(videos, container) {
-    container.innerHTML = videos.map((video, index) => `
+    if (!container || !videos || videos.length === 0) {
+      if (container) {
+        container.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:var(--muted); padding:2rem;">No videos available.</p>';
+      }
+      return;
+    }
+    
+    try {
+      container.innerHTML = videos.map((video, index) => {
+        if (!video || !video.id || !video.title) return '';
+        return `
       <div class="video-card" data-video-id="${video.id}">
         <div class="video-wrapper">
           <div class="video-thumbnail" data-video-id="${video.id}">
@@ -728,7 +739,13 @@ document.addEventListener('DOMContentLoaded', function () {
           </div>
         </div>
       </div>
-    `).join('');
+    `;
+      }).filter(html => html !== '').join('');
+    } catch (error) {
+      console.error('Error rendering video cards:', error);
+      container.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:var(--muted); padding:2rem;">Error displaying videos.</p>';
+      return;
+    }
 
     // YouTube Player API - Initialize when API is ready
     let youtubePlayers = {};
@@ -746,8 +763,23 @@ document.addEventListener('DOMContentLoaded', function () {
     
     // Function to create YouTube player using API
     function createYouTubePlayer(videoId, containerId) {
+      if (!videoId || !containerId) {
+        console.warn('Invalid videoId or containerId');
+        return null;
+      }
+      
+      // Check if container exists
+      const container = document.getElementById(containerId);
+      if (!container) {
+        console.warn(`Container ${containerId} not found, using direct iframe`);
+        return createDirectIframePlayer(videoId, containerId);
+      }
+      
+      // Always use direct iframe for reliability (avoids API issues)
+      return createDirectIframePlayer(videoId, containerId);
+      
+      /* YouTube API approach (commented out for reliability)
       if (!youtubeAPIReady && typeof YT === 'undefined') {
-        // Fallback: use direct iframe with proper configuration
         return createDirectIframePlayer(videoId, containerId);
       }
       
@@ -764,11 +796,12 @@ document.addEventListener('DOMContentLoaded', function () {
           },
           events: {
             onReady: function(event) {
-              event.target.playVideo();
+              if (event && event.target) {
+                event.target.playVideo();
+              }
             },
             onError: function(event) {
               console.warn('YouTube player error:', event.data);
-              // Fallback to direct iframe
               createDirectIframePlayer(videoId, containerId);
             }
           }
@@ -777,12 +810,18 @@ document.addEventListener('DOMContentLoaded', function () {
         console.warn('Failed to create YouTube API player, using fallback:', error);
         return createDirectIframePlayer(videoId, containerId);
       }
+      */
     }
     
     // Fallback: Direct iframe player with proper configuration (avoids Error 153)
     function createDirectIframePlayer(videoId, containerId) {
+      if (!videoId || !containerId) return null;
+      
       const container = document.getElementById(containerId);
-      if (!container) return null;
+      if (!container) {
+        console.warn(`Container ${containerId} not found`);
+        return null;
+      }
       
       // Create iframe with minimal parameters to avoid Error 153
       const iframe = document.createElement('iframe');
@@ -803,66 +842,106 @@ document.addEventListener('DOMContentLoaded', function () {
       return iframe;
     }
     
-    // Add click handlers for thumbnails
-    container.querySelectorAll('.video-thumbnail').forEach(thumbnail => {
-      thumbnail.addEventListener('click', function() {
-        const videoId = this.getAttribute('data-video-id');
-        const videoCard = this.closest('.video-card');
-        const thumbnailEl = videoCard.querySelector('.video-thumbnail');
-        const playerContainer = videoCard.querySelector('.video-player-container');
-        const containerId = `player-${videoId}`;
+    // Add click handlers for thumbnails - with null checks
+    const thumbnails = container.querySelectorAll('.video-thumbnail');
+    if (thumbnails && thumbnails.length > 0) {
+      thumbnails.forEach(thumbnail => {
+        if (!thumbnail) return;
         
-        // Hide thumbnail and show player container
-        thumbnailEl.style.display = 'none';
-        playerContainer.style.display = 'block';
-        playerContainer.id = containerId;
-        
-        // Create player (will use API if available, otherwise fallback)
-        if (!youtubePlayers[videoId]) {
-          youtubePlayers[videoId] = createYouTubePlayer(videoId, containerId);
-        } else {
-          // If player already exists, just show it
+        thumbnail.addEventListener('click', function() {
+          const videoId = this.getAttribute('data-video-id');
+          if (!videoId) return;
+          
+          const videoCard = this.closest('.video-card');
+          if (!videoCard) return;
+          
+          const thumbnailEl = videoCard.querySelector('.video-thumbnail');
+          const playerContainer = videoCard.querySelector('.video-player-container');
+          
+          if (!thumbnailEl || !playerContainer) return;
+          
+          const containerId = `player-${videoId}`;
+          
+          // Hide thumbnail and show player container
+          thumbnailEl.style.display = 'none';
           playerContainer.style.display = 'block';
+          playerContainer.id = containerId;
+          
+          // Create player (will use API if available, otherwise fallback)
+          if (!youtubePlayers[videoId]) {
+            youtubePlayers[videoId] = createYouTubePlayer(videoId, containerId);
+          } else {
+            // If player already exists, just show it
+            playerContainer.style.display = 'block';
+          }
+        });
+      });
+    }
+  }
+
+
+  // Grade selector buttons - with null checks
+  const gradeButtons = document.querySelectorAll('.grade-btn');
+  if (gradeButtons && gradeButtons.length > 0) {
+    gradeButtons.forEach(btn => {
+      if (!btn) return;
+      btn.addEventListener('click', function() {
+        if (!this) return;
+        gradeButtons.forEach(b => {
+          if (b) b.classList.remove('active');
+        });
+        this.classList.add('active');
+        const grade = this.getAttribute('data-grade');
+        if (grade) {
+          currentGrade = grade;
+          currentCourse = 'all';
+          
+          // Reset course tabs
+          const courseTabs = document.querySelectorAll('.course-tab');
+          if (courseTabs && courseTabs.length > 0) {
+            courseTabs.forEach(tab => {
+              if (!tab) return;
+              if (tab.getAttribute('data-course') === 'all') {
+                tab.classList.add('active');
+              } else {
+                tab.classList.remove('active');
+              }
+            });
+          }
+          
+          renderVideos();
         }
       });
     });
   }
 
-
-  // Grade selector buttons
-  const gradeButtons = document.querySelectorAll('.grade-btn');
-  gradeButtons.forEach(btn => {
-    btn.addEventListener('click', function() {
-      gradeButtons.forEach(b => b.classList.remove('active'));
-      this.classList.add('active');
-      currentGrade = this.getAttribute('data-grade');
-      currentCourse = 'all';
-      
-      // Reset course tabs
-      const courseTabs = document.querySelectorAll('.course-tab');
-      courseTabs.forEach(tab => {
-        if (tab.getAttribute('data-course') === 'all') {
-          tab.classList.add('active');
-        } else {
-          tab.classList.remove('active');
+  // Course tab buttons - with null checks
+  const courseTabs = document.querySelectorAll('.course-tab');
+  if (courseTabs && courseTabs.length > 0) {
+    courseTabs.forEach(tab => {
+      if (!tab) return;
+      tab.addEventListener('click', function() {
+        if (!this) return;
+        courseTabs.forEach(t => {
+          if (t) t.classList.remove('active');
+        });
+        this.classList.add('active');
+        const course = this.getAttribute('data-course');
+        if (course) {
+          currentCourse = course;
+          renderVideos();
         }
       });
-      
-      renderVideos();
     });
-  });
+  }
 
-  // Course tab buttons
-  const courseTabs = document.querySelectorAll('.course-tab');
-  courseTabs.forEach(tab => {
-    tab.addEventListener('click', function() {
-      courseTabs.forEach(t => t.classList.remove('active'));
-      this.classList.add('active');
-      currentCourse = this.getAttribute('data-course');
+  // Initial render - wait a bit to ensure DOM is ready
+  setTimeout(() => {
+    const videosContainer = document.getElementById('videos-container');
+    if (videosContainer) {
       renderVideos();
-    });
-  });
-
-  // Initial render
-  renderVideos();
+    } else {
+      console.warn('Videos container not found on initial load');
+    }
+  }, 100);
 });
