@@ -3,7 +3,7 @@
 // Function to send email notification automatically (using multiple methods)
 async function sendEmailNotification(name, email, phone, grade, message) {
   const emailTo = 'ABC@gmail.com';
-  const emailSubject = 'New Admission Application - Star Grammar High School';
+  const emailSubject = 'New Admission Application - Star Academy Public School Bhiria City';
   
   // Method 1: Try EmailJS (if configured)
   if (typeof emailjs !== 'undefined' && emailjs.send) {

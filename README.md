@@ -1,6 +1,6 @@
-# Star Grammar High School — Static Site
+# Star Academy Public School Bhiria City — Static Site
 
-This repository contains a responsive static website for Star Grammar High School (Bhiria City, Sindh).
+This repository contains a responsive static website for Star Academy Public School Bhiria City (Bhiria City, Sindh).
 Updates: principal and contact details updated; sample SVG images included for classroom, lab and admin office.
 
 Files:

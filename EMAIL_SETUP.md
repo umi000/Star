@@ -9,7 +9,7 @@ The admission form is configured to automatically send emails. You have three op
 2. Sign up for a free account
 3. Get your Access Key
 4. Replace `YOUR_WEB3FORMS_KEY` in `script.js` line 58 with your access key
-5. That's it! Emails will be sent automatically to uaslam1000@gmail.com
+5. That's it! Emails will be sent automatically to ABC@gmail.com
 
 ### Option 2: Formspree (Free - 50 submissions/month)
 1. Go to https://formspree.io
@@ -41,15 +41,15 @@ WhatsApp notifications open automatically with a pre-filled message. The user ju
 
 ## Current Configuration
 
-- **Email Recipient:** uaslam1000@gmail.com
-- **WhatsApp Number:** +923083170770
-- **Email Subject:** "New Admission Application - Star Grammar High School"
+- **Email Recipient:** ABC@gmail.com
+- **WhatsApp Number:** +923083145670
+- **Email Subject:** "New Admission Application - Star Academy Public School Bhiria City"
 
 ## Testing
 
 After setup, test the form by:
 1. Filling out the admission form
 2. Clicking "Submit Application"
-3. Checking if email arrives at uaslam1000@gmail.com
+3. Checking if email arrives at ABC@gmail.com
 4. Verifying WhatsApp message opens with pre-filled text
 
