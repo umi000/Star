@@ -1,0 +1,13 @@
+<!-- Admin office sample SVG (placeholder) -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" preserveAspectRatio="xMidYMid meet">
+  <rect width="100%" height="100%" fill="#ffffff"/>
+  <g transform="translate(80,60)" stroke="#012040" stroke-width="2" fill="none">
+    <rect x="0" y="0" width="640" height="360" rx="14" fill="#fbfbfd" stroke="#e9f0fb"/>
+    <!-- desk -->
+    <rect x="80" y="120" width="480" height="80" rx="10" fill="#f6f9fb" stroke="#dfeefc"/>
+    <rect x="120" y="60" width="120" height="60" rx="8" fill="#012040"/>
+    <text x="260" y="105" fill="#012040" font-family="Poppins, sans-serif" font-size="20">Principal Office — Rao Asif</text>
+    <text x="120" y="160" fill="#2b3b4a" font-family="Poppins, sans-serif" font-size="14">Phone: 0302 3265987</text>
+    <text x="120" y="182" fill="#2b3b4a" font-family="Poppins, sans-serif" font-size="14">Email: admissions.star@gmail.com</text>
+  </g>
+</svg>

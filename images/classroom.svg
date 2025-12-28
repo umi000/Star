@@ -1,0 +1,25 @@
+<!-- Classroom sample SVG (placeholder) -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="g" x1="0" x2="1">
+      <stop offset="0" stop-color="#f7fafc"/>
+      <stop offset="1" stop-color="#eef7ff"/>
+    </linearGradient>
+  </defs>
+  <rect width="100%" height="100%" fill="url(#g)"/>
+  <g transform="translate(60,50)" fill="none" stroke="#012040" stroke-width="2">
+    <rect x="0" y="0" width="680" height="360" rx="14" fill="#ffffff" stroke="#d7e6f5"/>
+    <!-- desks -->
+    <g fill="#f6f9fb" stroke="#cfe6ff">
+      <rect x="40" y="40" width="160" height="80" rx="8" />
+      <rect x="240" y="40" width="160" height="80" rx="8" />
+      <rect x="440" y="40" width="160" height="80" rx="8" />
+      <rect x="40" y="150" width="160" height="80" rx="8" />
+      <rect x="240" y="150" width="160" height="80" rx="8" />
+      <rect x="440" y="150" width="160" height="80" rx="8" />
+    </g>
+    <!-- board -->
+    <rect x="40" y="265" width="560" height="60" rx="6" fill="#012040" />
+    <text x="80" y="305" fill="#fff" font-family="Poppins, sans-serif" font-size="20">Welcome to Star Grammar - Classroom</text>
+  </g>
+</svg>

@@ -1,0 +1,19 @@
+<!-- Lab sample SVG (placeholder) -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" preserveAspectRatio="xMidYMid meet">
+  <rect width="100%" height="100%" fill="#fbfdff"/>
+  <g transform="translate(70,50)" fill="none" stroke="#012040" stroke-width="2">
+    <rect x="0" y="0" width="660" height="360" rx="14" fill="#ffffff" stroke="#e6f2fb"/>
+    <!-- benches -->
+    <g fill="#f3f7fb" stroke="#d0e7ff">
+      <rect x="50" y="40" width="560" height="60" rx="8"/>
+      <rect x="50" y="120" width="560" height="60" rx="8"/>
+      <rect x="50" y="200" width="560" height="60" rx="8"/>
+    </g>
+    <!-- equipment simple icons -->
+    <circle cx="120" cy="70" r="14" fill="#012040"/>
+    <rect x="170" y="56" width="80" height="28" rx="6" fill="#012040"/>
+    <circle cx="300" cy="70" r="14" fill="#012040"/>
+    <rect x="420" y="56" width="60" height="28" rx="6" fill="#012040"/>
+    <text x="60" y="310" fill="#012040" font-family="Poppins, sans-serif" font-size="20">Science Lab — Practical learning & experiments</text>
+  </g>
+</svg>
